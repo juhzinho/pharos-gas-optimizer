@@ -1,0 +1,798 @@
+{
+  "recordedAt": "2026-11-09T18:37:18.574Z",
+  "network": "Anvil fork of Pharos Pacific",
+  "note": "test wallet funded on the fork only; the base fee per block is injected (anvil_setNextBlockBaseFeePerGas) to show holding and the deadline — Pacific's own base fee has been a flat 10 gwei",
+  "scenarios": [
+    {
+      "key": "A",
+      "title": "Calm: the base fee is at the floor",
+      "request": {
+        "deadline": "2026-11-09T18:47:25Z",
+        "capGwei": 200,
+        "queuedBlock": 22586911,
+        "priceAtRequestGwei": 10
+      },
+      "ladder": [
+        {
+          "rung": 0,
+          "maxFeeGwei": 10,
+          "tipGwei": 0
+        },
+        {
+          "rung": 1,
+          "maxFeeGwei": 16,
+          "tipGwei": 0.1
+        },
+        {
+          "rung": 2,
+          "maxFeeGwei": 25.6,
+          "tipGwei": 0.2
+        },
+        {
+          "rung": 3,
+          "maxFeeGwei": 40.96,
+          "tipGwei": 0.4
+        },
+        {
+          "rung": 4,
+          "maxFeeGwei": 65.536,
+          "tipGwei": 0.8
+        },
+        {
+          "rung": 5,
+          "maxFeeGwei": 104.8576,
+          "tipGwei": 1.6
+        },
+        {
+          "rung": 6,
+          "maxFeeGwei": 167.77216,
+          "tipGwei": 3.2
+        },
+        {
+          "rung": 7,
+          "maxFeeGwei": 200,
+          "tipGwei": 6.4
+        }
+      ],
+      "trace": [
+        {
+          "block": 22586911,
+          "time": 1794249445,
+          "baseFeeGwei": 10,
+          "action": "submit",
+          "rung": 0,
+          "reason": "the base fee is 10 gwei, at or below the target 10 gwei"
+        },
+        {
+          "block": 22586912,
+          "time": 1794249455,
+          "baseFeeGwei": 10,
+          "action": "done",
+          "rung": 0,
+          "reason": "included (rung 0)"
+        }
+      ],
+      "state": "done",
+      "result": {
+        "rung": 0,
+        "hash": "0x42b2b7bb1feb883d21a08cac1c8bc2b4ae317f2b9204866c398725c9e5df7107",
+        "block": 22586912,
+        "time": 1794249455,
+        "status": "success",
+        "gasUsed": "21000",
+        "effectiveGasPrice": "10000000000",
+        "paidGwei": 10,
+        "feePros": 0.00021,
+        "feeUsd": 0.00011062779546487551,
+        "atRequest": {
+          "priceGwei": 10,
+          "nodeSuggestedGwei": 9.75,
+          "feePros": 0.00021
+        },
+        "vsRequestPct": 0,
+        "waitedSeconds": 10,
+        "waitedBlocks": 1,
+        "deadlineMet": true,
+        "secondsBeforeDeadline": 590,
+        "rungsSent": 1
+      },
+      "submissions": [
+        {
+          "rung": 0,
+          "hash": "0x42b2b7bb1feb883d21a08cac1c8bc2b4ae317f2b9204866c398725c9e5df7107",
+          "block": 22586911,
+          "time": 1794249445,
+          "baseFeeGwei": 10,
+          "why": "favorable"
+        }
+      ],
+      "rungsIncluded": 1
+    },
+    {
+      "key": "B",
+      "title": "A spike, then calm: held, sent at the floor",
+      "request": {
+        "deadline": "2026-11-09T18:47:45Z",
+        "capGwei": 200,
+        "queuedBlock": 22586913,
+        "priceAtRequestGwei": 60
+      },
+      "ladder": [
+        {
+          "rung": 0,
+          "maxFeeGwei": 10,
+          "tipGwei": 0
+        },
+        {
+          "rung": 1,
+          "maxFeeGwei": 16,
+          "tipGwei": 0.1
+        },
+        {
+          "rung": 2,
+          "maxFeeGwei": 25.6,
+          "tipGwei": 0.2
+        },
+        {
+          "rung": 3,
+          "maxFeeGwei": 40.96,
+          "tipGwei": 0.4
+        },
+        {
+          "rung": 4,
+          "maxFeeGwei": 65.536,
+          "tipGwei": 0.8
+        },
+        {
+          "rung": 5,
+          "maxFeeGwei": 104.8576,
+          "tipGwei": 1.6
+        },
+        {
+          "rung": 6,
+          "maxFeeGwei": 167.77216,
+          "tipGwei": 3.2
+        },
+        {
+          "rung": 7,
+          "maxFeeGwei": 200,
+          "tipGwei": 6.4
+        }
+      ],
+      "trace": [
+        {
+          "block": 22586913,
+          "time": 1794249465,
+          "baseFeeGwei": 60,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 60 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:46:45.000Z"
+        },
+        {
+          "block": 22586914,
+          "time": 1794249475,
+          "baseFeeGwei": 60,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 60 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:46:45.000Z"
+        },
+        {
+          "block": 22586915,
+          "time": 1794249485,
+          "baseFeeGwei": 52,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 52 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:46:45.000Z"
+        },
+        {
+          "block": 22586916,
+          "time": 1794249495,
+          "baseFeeGwei": 45,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 45 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:46:45.000Z"
+        },
+        {
+          "block": 22586917,
+          "time": 1794249505,
+          "baseFeeGwei": 38,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 38 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:46:45.000Z"
+        },
+        {
+          "block": 22586918,
+          "time": 1794249515,
+          "baseFeeGwei": 31,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 31 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:46:45.000Z"
+        },
+        {
+          "block": 22586919,
+          "time": 1794249525,
+          "baseFeeGwei": 25,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 25 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:46:45.000Z"
+        },
+        {
+          "block": 22586920,
+          "time": 1794249535,
+          "baseFeeGwei": 19,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 19 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:46:45.000Z"
+        },
+        {
+          "block": 22586921,
+          "time": 1794249545,
+          "baseFeeGwei": 14,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 14 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:46:45.000Z"
+        },
+        {
+          "block": 22586922,
+          "time": 1794249555,
+          "baseFeeGwei": 10,
+          "action": "submit",
+          "rung": 0,
+          "reason": "the base fee is 10 gwei, at or below the target 10 gwei"
+        },
+        {
+          "block": 22586923,
+          "time": 1794249565,
+          "baseFeeGwei": 10,
+          "action": "done",
+          "rung": 0,
+          "reason": "included (rung 0)"
+        }
+      ],
+      "state": "done",
+      "result": {
+        "rung": 0,
+        "hash": "0x7f50d57bbc00eccc8cadeb7a42d53cd8acf8fabf8d93a340a85496c2c3ecc5bc",
+        "block": 22586923,
+        "time": 1794249565,
+        "status": "success",
+        "gasUsed": "21000",
+        "effectiveGasPrice": "10000000000",
+        "paidGwei": 10,
+        "feePros": 0.00021,
+        "feeUsd": 0.00011062779546487551,
+        "atRequest": {
+          "priceGwei": 60,
+          "nodeSuggestedGwei": 53.5,
+          "feePros": 0.00126
+        },
+        "vsRequestPct": -83.33333333333334,
+        "waitedSeconds": 100,
+        "waitedBlocks": 10,
+        "deadlineMet": true,
+        "secondsBeforeDeadline": 500,
+        "rungsSent": 1
+      },
+      "submissions": [
+        {
+          "rung": 0,
+          "hash": "0x7f50d57bbc00eccc8cadeb7a42d53cd8acf8fabf8d93a340a85496c2c3ecc5bc",
+          "block": 22586922,
+          "time": 1794249555,
+          "baseFeeGwei": 10,
+          "why": "favorable"
+        }
+      ],
+      "rungsIncluded": 1
+    },
+    {
+      "key": "C",
+      "title": "A spike that lasts to the deadline: sent at the last call",
+      "request": {
+        "deadline": "2026-11-09T18:44:35Z",
+        "capGwei": 200,
+        "queuedBlock": 22586924,
+        "priceAtRequestGwei": 80
+      },
+      "ladder": [
+        {
+          "rung": 0,
+          "maxFeeGwei": 10,
+          "tipGwei": 0
+        },
+        {
+          "rung": 1,
+          "maxFeeGwei": 16,
+          "tipGwei": 0.1
+        },
+        {
+          "rung": 2,
+          "maxFeeGwei": 25.6,
+          "tipGwei": 0.2
+        },
+        {
+          "rung": 3,
+          "maxFeeGwei": 40.96,
+          "tipGwei": 0.4
+        },
+        {
+          "rung": 4,
+          "maxFeeGwei": 65.536,
+          "tipGwei": 0.8
+        },
+        {
+          "rung": 5,
+          "maxFeeGwei": 104.8576,
+          "tipGwei": 1.6
+        },
+        {
+          "rung": 6,
+          "maxFeeGwei": 167.77216,
+          "tipGwei": 3.2
+        },
+        {
+          "rung": 7,
+          "maxFeeGwei": 200,
+          "tipGwei": 6.4
+        }
+      ],
+      "trace": [
+        {
+          "block": 22586924,
+          "time": 1794249575,
+          "baseFeeGwei": 80,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 80 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:43:35.000Z"
+        },
+        {
+          "block": 22586925,
+          "time": 1794249585,
+          "baseFeeGwei": 80,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 80 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:43:35.000Z"
+        },
+        {
+          "block": 22586926,
+          "time": 1794249595,
+          "baseFeeGwei": 80,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 80 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:43:35.000Z"
+        },
+        {
+          "block": 22586927,
+          "time": 1794249605,
+          "baseFeeGwei": 80,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 80 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:43:35.000Z"
+        },
+        {
+          "block": 22586928,
+          "time": 1794249615,
+          "baseFeeGwei": 80,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 80 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:43:35.000Z"
+        },
+        {
+          "block": 22586929,
+          "time": 1794249625,
+          "baseFeeGwei": 80,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 80 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:43:35.000Z"
+        },
+        {
+          "block": 22586930,
+          "time": 1794249635,
+          "baseFeeGwei": 80,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 80 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:43:35.000Z"
+        },
+        {
+          "block": 22586931,
+          "time": 1794249645,
+          "baseFeeGwei": 80,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 80 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:43:35.000Z"
+        },
+        {
+          "block": 22586932,
+          "time": 1794249655,
+          "baseFeeGwei": 80,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 80 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:43:35.000Z"
+        },
+        {
+          "block": 22586933,
+          "time": 1794249665,
+          "baseFeeGwei": 80,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 80 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:43:35.000Z"
+        },
+        {
+          "block": 22586934,
+          "time": 1794249675,
+          "baseFeeGwei": 80,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 80 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:43:35.000Z"
+        },
+        {
+          "block": 22586935,
+          "time": 1794249685,
+          "baseFeeGwei": 80,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 80 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:43:35.000Z"
+        },
+        {
+          "block": 22586936,
+          "time": 1794249695,
+          "baseFeeGwei": 80,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 80 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:43:35.000Z"
+        },
+        {
+          "block": 22586937,
+          "time": 1794249705,
+          "baseFeeGwei": 80,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 80 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:43:35.000Z"
+        },
+        {
+          "block": 22586938,
+          "time": 1794249715,
+          "baseFeeGwei": 80,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 80 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:43:35.000Z"
+        },
+        {
+          "block": 22586939,
+          "time": 1794249725,
+          "baseFeeGwei": 80,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 80 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:43:35.000Z"
+        },
+        {
+          "block": 22586940,
+          "time": 1794249735,
+          "baseFeeGwei": 80,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 80 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:43:35.000Z"
+        },
+        {
+          "block": 22586941,
+          "time": 1794249745,
+          "baseFeeGwei": 80,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 80 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:43:35.000Z"
+        },
+        {
+          "block": 22586942,
+          "time": 1794249755,
+          "baseFeeGwei": 80,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 80 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:43:35.000Z"
+        },
+        {
+          "block": 22586943,
+          "time": 1794249765,
+          "baseFeeGwei": 80,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 80 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:43:35.000Z"
+        },
+        {
+          "block": 22586944,
+          "time": 1794249775,
+          "baseFeeGwei": 80,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 80 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:43:35.000Z"
+        },
+        {
+          "block": 22586945,
+          "time": 1794249785,
+          "baseFeeGwei": 80,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 80 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:43:35.000Z"
+        },
+        {
+          "block": 22586946,
+          "time": 1794249795,
+          "baseFeeGwei": 80,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 80 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:43:35.000Z"
+        },
+        {
+          "block": 22586947,
+          "time": 1794249805,
+          "baseFeeGwei": 80,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 80 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:43:35.000Z"
+        },
+        {
+          "block": 22586948,
+          "time": 1794249815,
+          "baseFeeGwei": 80,
+          "action": "submit",
+          "rung": 6,
+          "reason": "last call before the deadline: sending at 167.772 gwei max even though the base fee is 80 gwei"
+        },
+        {
+          "block": 22586949,
+          "time": 1794249825,
+          "baseFeeGwei": 80,
+          "action": "done",
+          "rung": 6,
+          "reason": "included (rung 6)"
+        }
+      ],
+      "state": "done",
+      "result": {
+        "rung": 6,
+        "hash": "0x1a700848601704dac7a650d31e0dcb00fb63d0b9de48afbf4863e2c82076e94c",
+        "block": 22586949,
+        "time": 1794249825,
+        "status": "success",
+        "gasUsed": "21000",
+        "effectiveGasPrice": "83200000000",
+        "paidGwei": 83.2,
+        "feePros": 0.0017472,
+        "feeUsd": 0.0009204232582677642,
+        "atRequest": {
+          "priceGwei": 80,
+          "nodeSuggestedGwei": 71,
+          "feePros": 0.00168
+        },
+        "vsRequestPct": 4.0000000000000036,
+        "waitedSeconds": 250,
+        "waitedBlocks": 25,
+        "deadlineMet": true,
+        "secondsBeforeDeadline": 50,
+        "rungsSent": 1
+      },
+      "submissions": [
+        {
+          "rung": 6,
+          "hash": "0x1a700848601704dac7a650d31e0dcb00fb63d0b9de48afbf4863e2c82076e94c",
+          "block": 22586948,
+          "time": 1794249815,
+          "baseFeeGwei": 80,
+          "why": "deadline"
+        }
+      ],
+      "rungsIncluded": 1
+    },
+    {
+      "key": "D",
+      "title": "Priced out after sending: replaced by the next rung",
+      "request": {
+        "deadline": "2026-11-09T18:53:55Z",
+        "capGwei": 200,
+        "queuedBlock": 22586950,
+        "priceAtRequestGwei": 10
+      },
+      "ladder": [
+        {
+          "rung": 0,
+          "maxFeeGwei": 10,
+          "tipGwei": 0
+        },
+        {
+          "rung": 1,
+          "maxFeeGwei": 16,
+          "tipGwei": 0.1
+        },
+        {
+          "rung": 2,
+          "maxFeeGwei": 25.6,
+          "tipGwei": 0.2
+        },
+        {
+          "rung": 3,
+          "maxFeeGwei": 40.96,
+          "tipGwei": 0.4
+        },
+        {
+          "rung": 4,
+          "maxFeeGwei": 65.536,
+          "tipGwei": 0.8
+        },
+        {
+          "rung": 5,
+          "maxFeeGwei": 104.8576,
+          "tipGwei": 1.6
+        },
+        {
+          "rung": 6,
+          "maxFeeGwei": 167.77216,
+          "tipGwei": 3.2
+        },
+        {
+          "rung": 7,
+          "maxFeeGwei": 200,
+          "tipGwei": 6.4
+        }
+      ],
+      "trace": [
+        {
+          "block": 22586950,
+          "time": 1794249835,
+          "baseFeeGwei": 10,
+          "action": "submit",
+          "rung": 0,
+          "reason": "the base fee is 10 gwei, at or below the target 10 gwei"
+        },
+        {
+          "block": 22586951,
+          "time": 1794249845,
+          "baseFeeGwei": 14,
+          "action": "replace",
+          "rung": 1,
+          "reason": "the base fee (14 gwei) rose above what rung 0 can pay (10 gwei) — replacing with rung 1 (16 gwei max, same nonce)"
+        },
+        {
+          "block": 22586952,
+          "time": 1794249855,
+          "baseFeeGwei": 14,
+          "action": "done",
+          "rung": 1,
+          "reason": "included (rung 1)"
+        }
+      ],
+      "state": "done",
+      "result": {
+        "rung": 1,
+        "hash": "0x5ba3258dd8f04f887777b0b5448e6d2e0470e39aecf9ebf4a544548e2ccdb1df",
+        "block": 22586952,
+        "time": 1794249855,
+        "status": "success",
+        "gasUsed": "21000",
+        "effectiveGasPrice": "14100000000",
+        "paidGwei": 14.1,
+        "feePros": 0.0002961,
+        "feeUsd": 0.00015598519160547447,
+        "atRequest": {
+          "priceGwei": 10,
+          "nodeSuggestedGwei": 9.75,
+          "feePros": 0.00021
+        },
+        "vsRequestPct": 41,
+        "waitedSeconds": 20,
+        "waitedBlocks": 2,
+        "deadlineMet": true,
+        "secondsBeforeDeadline": 580,
+        "rungsSent": 2
+      },
+      "submissions": [
+        {
+          "rung": 0,
+          "hash": "0x82a7ba8a737cfae495b5924ae1c69f7c7ece5207de980f271f810a7d3ed12ab5",
+          "block": 22586950,
+          "time": 1794249835,
+          "baseFeeGwei": 10,
+          "why": "favorable"
+        },
+        {
+          "rung": 1,
+          "hash": "0x5ba3258dd8f04f887777b0b5448e6d2e0470e39aecf9ebf4a544548e2ccdb1df",
+          "block": 22586951,
+          "time": 1794249845,
+          "baseFeeGwei": 14,
+          "why": "escalate"
+        }
+      ],
+      "rungsIncluded": 1
+    },
+    {
+      "key": "E",
+      "title": "The sender uses the nonce for something else: superseded",
+      "request": {
+        "deadline": "2026-11-09T18:54:25Z",
+        "capGwei": 200,
+        "queuedBlock": 22586953,
+        "priceAtRequestGwei": 60
+      },
+      "ladder": [
+        {
+          "rung": 0,
+          "maxFeeGwei": 10,
+          "tipGwei": 0
+        },
+        {
+          "rung": 1,
+          "maxFeeGwei": 16,
+          "tipGwei": 0.1
+        },
+        {
+          "rung": 2,
+          "maxFeeGwei": 25.6,
+          "tipGwei": 0.2
+        },
+        {
+          "rung": 3,
+          "maxFeeGwei": 40.96,
+          "tipGwei": 0.4
+        },
+        {
+          "rung": 4,
+          "maxFeeGwei": 65.536,
+          "tipGwei": 0.8
+        },
+        {
+          "rung": 5,
+          "maxFeeGwei": 104.8576,
+          "tipGwei": 1.6
+        },
+        {
+          "rung": 6,
+          "maxFeeGwei": 167.77216,
+          "tipGwei": 3.2
+        },
+        {
+          "rung": 7,
+          "maxFeeGwei": 200,
+          "tipGwei": 6.4
+        }
+      ],
+      "trace": [
+        {
+          "block": 22586953,
+          "time": 1794249865,
+          "baseFeeGwei": 60,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 60 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:53:25.000Z"
+        },
+        {
+          "block": 22586954,
+          "time": 1794249875,
+          "baseFeeGwei": 60,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 60 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:53:25.000Z"
+        },
+        {
+          "block": 22586955,
+          "time": 1794249885,
+          "baseFeeGwei": 60,
+          "action": "hold",
+          "rung": null,
+          "reason": "the base fee is 60 gwei, above the target 10 gwei — holding; last call at 2026-11-09T18:53:25.000Z"
+        },
+        {
+          "block": 22586956,
+          "time": 1794249895,
+          "baseFeeGwei": 60,
+          "action": "superseded",
+          "rung": null,
+          "reason": "the sender's nonce is now 1: nonce 0 was used by another transaction, so none of the rungs can be included"
+        }
+      ],
+      "state": "superseded",
+      "result": null,
+      "submissions": [],
+      "rungsIncluded": 0
+    }
+  ],
+  "forkBlock": 22586910
+}

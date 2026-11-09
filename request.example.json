@@ -1,0 +1,9 @@
+{
+  "label": "weekly treasury sweep",
+  "from": "0xYourAddress",
+  "to": "0x1111111111111111111111111111111111111111",
+  "value": "1000000000000000",
+  "data": "0x",
+  "deadline": "2026-11-14T18:00:00Z",
+  "capGwei": 120
+}

@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pharos Gas Optimizer</title>
+  <meta name="description" content="A SkillEngine skill that watches Pharos gas, holds non-urgent transactions until the price is right and always sends them by the deadline — from a ladder of signed rungs, so it never holds a key and never sends twice." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root { --paper:#f0eee7; --card:#fffdf8; --ink:#17181c; --muted:#686a72; --line:#e0dbcf; --line-2:#cbc5b6; --brand:#0033ff; --ok:#1d7a4d; --ok-soft:#e3f2e8; --warn:#9a5b00; --warn-soft:#fbeed6; --bad:#c2311f; --bad-soft:#fbe6e2; --fee:#0033ff; --tgt:#1d7a4d; --dl:#c2311f; --lc:#7a3cd6; --mono:"IBM Plex Mono",ui-monospace,Consolas,monospace; --sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif; }
+    * { box-sizing: border-box; }
+    html { color-scheme: light; }
+    body { margin: 0; font: 15px/1.5 var(--sans); color: var(--ink); background: var(--paper); }
+    a { color: var(--brand); }
+    .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+    .top { position: sticky; top: 0; z-index: 10; background: var(--paper); display: flex; align-items: center; gap: 16px; padding: 14px 40px; border-bottom: 1px solid var(--line); }
+    .brand { display: flex; gap: 10px; align-items: center; color: inherit; text-decoration: none; }
+    .brand b { font-size: 14px; letter-spacing: .12em; font-weight: 800; } .brand em { font-style: normal; color: var(--muted); font-size: 11px; font-weight: 600; letter-spacing: .1em; }
+    .spacer { flex: 1; } .links a { font-size: 13px; font-weight: 600; color: var(--ink); text-decoration: none; margin-right: 14px; }
+    .lang button { border: 1px solid var(--line-2); background: var(--card); padding: 6px 11px; font: 600 12px var(--sans); cursor: pointer; color: var(--ink); }
+    .lang button:first-child { border-radius: 999px 0 0 999px; } .lang button:last-child { border-radius: 0 999px 999px 0; border-left: 0; }
+    .lang button.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+    main { max-width: 1120px; margin: 0 auto; padding: 40px 40px 24px; display: grid; gap: 22px; }
+    .kicker { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--brand); margin: 0 0 10px; }
+    h1 { font-size: clamp(34px, 6vw, 56px); line-height: .95; letter-spacing: -.04em; margin: 0 0 12px; }
+    .lead { color: var(--muted); margin: 0; font-size: 17px; max-width: 66ch; }
+    section.panel { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 22px; min-width: 0; }
+    .panel h2 { font-size: 17px; margin: 0 0 4px; letter-spacing: -.01em; }
+    .sub { color: var(--muted); font-size: 13.5px; margin: 0 0 16px; max-width: 86ch; }
+    .btn { padding: 8px 16px; border: 0; border-radius: 999px; background: var(--ink); color: #fff; font: 600 13px var(--sans); cursor: pointer; white-space: nowrap; }
+    .btn:disabled { opacity: .45; cursor: progress; } .btn.ghost { background: var(--card); color: var(--ink); border: 1px solid var(--line-2); }
+    .muted { color: var(--muted); } .err { color: var(--bad); }
+    .tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; }
+    .tile { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; min-width: 0; }
+    .tile .k { font: 600 11px var(--sans); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); } .tile .v { font: 600 22px var(--mono); margin-top: 2px; letter-spacing: -.02em; } .tile .s { font-size: 12px; color: var(--muted); }
+    .tile.hot .v { color: var(--warn); }
+    .grid2 { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 18px; }
+    .chart svg { width: 100%; height: auto; display: block; }
+    .chart .cap { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .hist { display: grid; gap: 5px; }
+    .hrow { display: grid; grid-template-columns: 110px 1fr 46px; gap: 8px; align-items: center; font-size: 12.5px; }
+    .hrow .bar { height: 14px; background: var(--paper); border-radius: 3px; overflow: hidden; } .hrow .bar i { display: block; height: 100%; background: var(--warn); border-radius: 3px; } .hrow.floor .bar i { background: var(--ok); }
+    .quote { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 14px; font-size: 13px; }
+    .quote input { width: 110px; padding: 6px 8px; border: 1px solid var(--line-2); border-radius: 8px; background: var(--paper); font: 13px var(--mono); color: var(--ink); }
+    .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+    .tabs button { border: 1px solid var(--line-2); background: var(--card); color: var(--ink); border-radius: 999px; padding: 7px 14px; font: 600 13px var(--sans); cursor: pointer; }
+    .tabs button.on { background: var(--ink); border-color: var(--ink); color: #fff; }
+    .scen { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+    .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-top: 6px; } .legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; background: var(--c); }
+    .verdict { padding: 12px 14px; border-radius: 12px; background: var(--paper); font-size: 13.5px; }
+    .verdict b.big { display: block; font: 600 26px var(--mono); letter-spacing: -.02em; }
+    .steps { list-style: none; margin: 10px 0 0; padding: 0; font-size: 12.5px; max-height: 230px; overflow: auto; }
+    .steps li { padding: 5px 0; border-top: 1px dashed var(--line); display: grid; grid-template-columns: 64px 1fr; gap: 8px; } .steps li:first-child { border-top: 0; }
+    .steps .a { font: 700 10.5px var(--sans); letter-spacing: .06em; text-transform: uppercase; }
+    .a.hold { color: var(--warn); } .a.submit, .a.replace { color: var(--brand); } .a.done { color: var(--ok); } .a.superseded, .a.missed { color: var(--bad); }
+    .sim { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+    table.t { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 12px; }
+    table.t th { text-align: left; font: 600 11px var(--sans); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 0 10px 6px 0; border-bottom: 1px solid var(--line-2); }
+    table.t td { padding: 6px 10px 6px 0; border-bottom: 1px dashed var(--line); }
+    .how { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .how div { font-size: 13px; } .how b { display: block; margin-bottom: 4px; font-size: 13.5px; } .how span { color: var(--muted); }
+    footer { color: var(--muted); font-size: 12.5px; max-width: 1120px; margin: 0 auto; padding: 4px 40px 44px; } footer a { color: var(--muted); }
+    [hidden] { display: none !important; }
+    @media (max-width: 960px) { .grid2, .scen { grid-template-columns: minmax(0, 1fr); } .tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } .sim { grid-template-columns: repeat(3, minmax(0, 1fr)); } .how { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 680px) { .top { padding: 12px 16px; } main { padding: 26px 16px 16px; } footer { padding: 4px 16px 32px; } .brand em, .links { display: none; } section.panel { padding: 16px; } .sim, .how { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .hrow { grid-template-columns: 92px 1fr 38px; } .t .hide-s { display: none; } }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="#"><svg width="22" height="22" viewBox="0 0 34 34" aria-hidden="true"><rect width="34" height="34" rx="8" fill="#0033ff"/><path d="M8 24a9 9 0 0 1 18 0" fill="none" stroke="#fff" stroke-width="2.6"/><path d="M17 24l5-7" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg><span><b>PHAROS</b> <em>GAS OPTIMIZER</em></span></a>
+    <span class="spacer"></span>
+    <nav class="links"><a href="https://github.com/juhzinho/pharos-gas-optimizer" target="_blank" rel="noopener">GitHub</a><a href="https://github.com/juhzinho/pharos-gas-optimizer/blob/main/skill/pharos-gas-optimizer/SKILL.md" target="_blank" rel="noopener">SKILL.md</a></nav>
+    <div class="lang"><button data-lang="en">EN</button><button data-lang="pt">PT</button></div>
+  </header>
+
+  <main>
+    <section>
+      <p class="kicker">SkillEngine · Medium · Pharos Pacific</p>
+      <h1>Gas Optimizer</h1>
+      <p class="lead" data-i="lead"></p>
+    </section>
+
+    <section class="panel">
+      <div style="display:flex;gap:10px;align-items:baseline;flex-wrap:wrap"><h2 data-i="mTitle"></h2><span class="spacer"></span><span class="muted num" id="mMeta" style="font-size:12.5px"></span><button class="btn ghost" id="liveBtn" data-i="liveBtn"></button></div>
+      <p class="sub" data-i="mSub"></p>
+      <p class="muted" id="msg" style="font-size:13px;margin:-6px 0 10px"></p>
+      <div class="tiles" id="mTiles"></div>
+      <div class="grid2">
+        <div class="chart"><div id="c30"></div><div class="cap" id="c30cap"></div><div style="height:14px"></div><div id="c1024"></div><div class="cap" id="c1024cap"></div></div>
+        <div><div class="muted" style="font-size:12px;margin-bottom:8px" id="histTitle"></div><div class="hist" id="hist"></div>
+          <div class="quote"><label for="gasIn" data-i="quoteL"></label><input id="gasIn" class="num" value="21000" inputmode="numeric" /><span id="quote" class="num"></span></div></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 data-i="fTitle"></h2>
+      <p class="sub" id="fSub"></p>
+      <div class="tabs" id="tabs"></div>
+      <div class="scen"><div class="chart"><div id="sc"></div><div class="legend" id="legend"></div></div><div><div class="verdict" id="sv"></div><ul class="steps" id="steps"></ul></div></div>
+    </section>
+
+    <section class="panel">
+      <h2 data-i="sTitle"></h2>
+      <p class="sub" id="sSub"></p>
+      <div class="sim" id="sim"></div>
+      <table class="t" id="regimes"></table>
+    </section>
+
+    <section class="panel">
+      <h2 data-i="lTitle"></h2>
+      <p class="sub" data-i="lSub"></p>
+      <table class="t" id="ladder"></table>
+    </section>
+
+    <section class="panel">
+      <h2 data-i="howTitle"></h2>
+      <div class="how" id="how" style="margin-top:12px"></div>
+    </section>
+  </main>
+  <footer id="footer"></footer>
+
+  <script type="module">
+    const T = {
+      en: {
+        lead: "It watches the fee market on Pharos, holds a non-urgent transaction until gas is favorable, and always sends it by your deadline. It never holds your key: you sign a small ladder of the same transaction at rising fees — same nonce, so it can only ever run once.",
+        mTitle: "The fee market on Pacific, as it really is", mSub: "Read from mainnet. Pacific blocks have a 1,000,000,000 gas limit and are a tiny fraction full, so the EIP-1559 base fee never has a reason to rise — it has sat at 10 gwei. What varies is what senders choose to pay on top.",
+        liveBtn: "Read it live", running: "Reading the last 128 blocks on Pacific… (~5–20 s)", live: "live", recorded: "recorded",
+        tiles: { base: "Base fee now", baseS: (s, t) => `eth_gasPrice ${s} · suggested tip ${t}`, flat: "Last 30 days", flatS: (n) => `base fee at ${n} sampled blocks`, over: "Paid above it", overS: (n, t) => `${n} of ${t} transactions`, extra: "Paid for nothing", extraS: (b) => `PROS over the base fee, in ${b} blocks` },
+        c30: (lo, hi) => `Base fee, last 30 days: ${lo === hi ? `${lo} gwei every time` : `${lo}–${hi} gwei`}.`, c1024: (n, f) => `Base fee per block, last ${n} blocks · blocks at most ${f} % full.`,
+        hist: (n) => `What ${n} recent transactions paid above the base fee (gwei per gas)`, band: { "the base fee": "exactly the base fee", "< +1": "< +1", "+1–5": "+1 to 5", "+5–20": "+5 to 20", "+20–50": "+20 to 50", "+50–100": "+50 to 100", "+100 or more": "+100 or more" },
+        quoteL: "Gas units", quote: (f, p) => `at the floor ${f} PROS · at others' p90 ${p} PROS`,
+        fTitle: "Five situations, on a fork, block by block", fSub: (b) => `An Anvil fork of Pacific mainnet (block ${b}). Since Pacific's own base fee is flat, the fork's base fee is set per block (anvil_setNextBlockBaseFeePerGas) to create spikes — injected and labelled. Blocks are 10 s of chain time apart; a fresh test key signs the ladder; every result below is a real receipt.`,
+        tabs: { A: "A · calm", B: "B · spike, then calm", C: "C · spike to the deadline", D: "D · priced out in flight", E: "E · sender moves on" },
+        leg: { fee: "base fee", tgt: "target", lc: "last call", dl: "deadline", hold: "held", sent: "sent", repl: "replaced", inc: "included" },
+        paid: "paid", atReq: (x) => `vs ${x} gwei at request`, before: (s) => `${s} s before the deadline`, rungs: (s, i) => `rungs sent ${s} · included ${i}`, superseded: "Superseded — nothing sent", supersededS: "The sender used the nonce for another transaction; the ladder can never be included.",
+        act: { hold: "held", submit: "sent", replace: "replaced", wait: "waiting", done: "included", superseded: "superseded", missed: "missed" },
+        sTitle: "The deadline, against 2,000 random fee paths", sSub: (m) => `The decision logic run against simulated base-fee paths (${m}). The point is the guarantee, not the saving: every run was included before its deadline, and never twice.`,
+        sim: { inTime: "in time", twice: "included twice", once: "sent at once", held: "held, then favorable", last: "sent at the last call" },
+        reg: ["regime", "runs", "at once", "held → favorable", "last call"], regName: { calm: "calm", "decaying spike": "decaying spike", "lasting spike": "lasting spike", volatile: "volatile" },
+        tightest: (s) => `tightest: ${s} s before the deadline`,
+        lTitle: "The ladder you sign", lSub: "One transaction, one nonce, signed at each of these fees (this one with a 200 gwei cap). The cheapest rung is today's floor with no tip; each rung is a valid replacement for the one below; the top is your cap — the most the deadline can cost.",
+        lcols: ["rung", "max fee (gwei)", "tip (gwei)", "used when"], lwhen: (i, n) => (i === 0 ? "the base fee is at the floor" : i === n - 1 ? "the base fee exceeds every lower rung (your cap)" : "the base fee rose, or a sent rung stalled"),
+        howTitle: "How it works",
+        how: [["1 · Watch", "Every tick reads the head block's base fee and the fee history; the market panel shows what others pay on top of it."], ["2 · Hold", "Below the target (by default the recent floor) the cheapest rung that covers the base fee is sent; above it the transaction waits — and the reason is logged."], ["3 · Never late", "From the last call (60 s before the deadline) the rung that covers the base fee three blocks ahead is sent, whatever the price. A rung that stalls or is priced out is replaced by the next one."], ["4 · Never twice", "Every rung has the same nonce: only one can be included. The agent checks every rung's receipt and the sender's nonce on every tick, so a crash or the sender's own wallet cannot fool it."]],
+        footer: (r) => `Mainnet data recorded on Pharos Pacific ${r}. Nothing on this page signs or sends a transaction.`,
+        errNet: "Could not reach the market reader. Try again in a minute.",
+      },
+      pt: {
+        lead: "Ele acompanha o mercado de gás na Pharos, segura uma transação não urgente até o gás ficar favorável e sempre a envia dentro do seu prazo. Nunca guarda sua chave: você assina uma pequena escada da mesma transação com taxas crescentes — mesmo nonce, então ela só pode rodar uma vez.",
+        mTitle: "O mercado de gás na Pacific, como ele é de verdade", mSub: "Lido da mainnet. Os blocos da Pacific têm limite de 1.000.000.000 de gás e ficam com uma fração mínima ocupada, então a base fee do EIP-1559 nunca tem motivo para subir — ficou em 10 gwei. O que varia é o quanto quem envia escolhe pagar por cima.",
+        liveBtn: "Ler ao vivo", running: "Lendo os últimos 128 blocos da Pacific… (~5–20 s)", live: "ao vivo", recorded: "gravado",
+        tiles: { base: "Base fee agora", baseS: (s, t) => `eth_gasPrice ${s} · gorjeta sugerida ${t}`, flat: "Últimos 30 dias", flatS: (n) => `base fee em ${n} blocos amostrados`, over: "Pagaram acima", overS: (n, t) => `${n} de ${t} transações`, extra: "Pagos à toa", extraS: (b) => `PROS acima da base fee, em ${b} blocos` },
+        c30: (lo, hi) => `Base fee, últimos 30 dias: ${lo === hi ? `${lo} gwei todas as vezes` : `${lo}–${hi} gwei`}.`, c1024: (n, f) => `Base fee por bloco, últimos ${n} blocos · blocos no máximo ${f} % cheios.`,
+        hist: (n) => `Quanto ${n} transações recentes pagaram acima da base fee (gwei por gás)`, band: { "the base fee": "exatamente a base fee", "< +1": "< +1", "+1–5": "+1 a 5", "+5–20": "+5 a 20", "+20–50": "+20 a 50", "+50–100": "+50 a 100", "+100 or more": "+100 ou mais" },
+        quoteL: "Unidades de gás", quote: (f, p) => `no piso ${f} PROS · no p90 dos outros ${p} PROS`,
+        fTitle: "Cinco situações, num fork, bloco a bloco", fSub: (b) => `Um fork Anvil da mainnet Pacific (bloco ${b}). Como a base fee da Pacific é plana, a base fee do fork é definida bloco a bloco (anvil_setNextBlockBaseFeePerGas) para criar picos — injetados e rotulados. Os blocos ficam a 10 s de distância no relógio da rede; uma chave de teste nova assina a escada; cada resultado abaixo é um recibo real.`,
+        tabs: { A: "A · calmo", B: "B · pico, depois calmo", C: "C · pico até o prazo", D: "D · preço subiu no envio", E: "E · usuário mudou de ideia" },
+        leg: { fee: "base fee", tgt: "meta", lc: "última chamada", dl: "prazo", hold: "segurou", sent: "enviou", repl: "substituiu", inc: "incluída" },
+        paid: "pagou", atReq: (x) => `contra ${x} gwei no pedido`, before: (s) => `${s} s antes do prazo`, rungs: (s, i) => `degraus enviados ${s} · incluídos ${i}`, superseded: "Superada — nada enviado", supersededS: "O usuário usou o nonce para outra transação; a escada nunca pode ser incluída.",
+        act: { hold: "segurou", submit: "enviou", replace: "substituiu", wait: "esperando", done: "incluída", superseded: "superada", missed: "perdida" },
+        sTitle: "O prazo, contra 2.000 caminhos aleatórios de taxa", sSub: (m) => `A lógica de decisão rodada contra caminhos simulados de base fee (${m}). O ponto é a garantia, não a economia: toda execução entrou antes do prazo, e nunca duas vezes.`,
+        sim: { inTime: "dentro do prazo", twice: "incluída 2×", once: "enviada na hora", held: "segurou, depois favorável", last: "na última chamada" },
+        reg: ["regime", "execuções", "na hora", "segurou → favorável", "última chamada"], regName: { calm: "calmo", "decaying spike": "pico que cai", "lasting spike": "pico que dura", volatile: "volátil" },
+        tightest: (s) => `mais apertado: ${s} s antes do prazo`,
+        lTitle: "A escada que você assina", lSub: "Uma transação, um nonce, assinada em cada uma destas taxas (esta com teto de 200 gwei). O degrau mais barato é o piso de hoje sem gorjeta; cada degrau substitui validamente o de baixo; o topo é o seu teto — o máximo que o prazo pode custar.",
+        lcols: ["degrau", "taxa máx. (gwei)", "gorjeta (gwei)", "usado quando"], lwhen: (i, n) => (i === 0 ? "a base fee está no piso" : i === n - 1 ? "a base fee passa todos os degraus abaixo (seu teto)" : "a base fee subiu, ou um degrau enviado travou"),
+        howTitle: "Como funciona",
+        how: [["1 · Acompanha", "Cada tick lê a base fee do bloco atual e o histórico de taxas; o painel mostra o que os outros pagam por cima."], ["2 · Segura", "Abaixo da meta (por padrão o piso recente) envia o degrau mais barato que cobre a base fee; acima dela a transação espera — e o motivo fica registrado."], ["3 · Nunca atrasa", "A partir da última chamada (60 s antes do prazo) envia o degrau que cobre a base fee três blocos à frente, custe o que custar. Um degrau que trava ou fica abaixo do preço é substituído pelo seguinte."], ["4 · Nunca em dobro", "Todo degrau tem o mesmo nonce: só um pode entrar. O agente confere o recibo de todos os degraus e o nonce do usuário a cada tick, então nem uma queda nem a carteira do próprio usuário o enganam."]],
+        footer: (r) => `Dados da mainnet gravados na Pharos Pacific em ${r}. Nada nesta página assina ou envia transação.`,
+        errNet: "Não consegui ler o mercado. Tente de novo em um minuto.",
+      },
+    };
+    let lang = "en", market = null, live = null, fork = null, sim = null, scen = "B";
+    try { const l = localStorage.getItem("go-lang"); if (l === "pt" || l === "en") lang = l; else if ((navigator.language || "").startsWith("pt")) lang = "pt"; } catch {}
+    const t = () => T[lang];
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+    const loc = () => (lang === "pt" ? "pt-BR" : "en-US");
+    const n = (x, d = 0) => Number(x).toLocaleString(loc(), { maximumFractionDigits: d });
+    const when = (iso) => new Date(iso).toLocaleString(loc(), { dateStyle: "medium", timeStyle: "short" });
+
+    // ───────── small SVG line chart ─────────
+    function line(points, { w = 640, h = 150, yMin, yMax, color = "var(--fee)", marks = [], hlines = [], vlines = [], xLabel = "" } = {}) {
+      const xs = points.map((p) => p.x), ys = points.map((p) => p.y);
+      const x0 = Math.min(...xs, ...vlines.map((v) => v.x)), x1 = Math.max(...xs, ...vlines.map((v) => v.x));
+      const lo = yMin ?? 0, hi = yMax ?? Math.max(...ys, ...hlines.map((l) => l.y)) * 1.15;
+      const P = { l: 40, r: 10, t: 10, b: 22 };
+      const X = (x) => P.l + ((x - x0) / Math.max(1e-9, x1 - x0)) * (w - P.l - P.r);
+      const Y = (y) => h - P.b - ((y - lo) / Math.max(1e-9, hi - lo)) * (h - P.t - P.b);
+      const ticks = [lo, (lo + hi) / 2, hi].map((v) => `<line x1="${P.l}" x2="${w - P.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)" /><text x="${P.l - 6}" y="${Y(v) + 4}" text-anchor="end" font-size="10" fill="var(--muted)" font-family="IBM Plex Mono">${Math.round(v)}</text>`).join("");
+      const path = points.map((p, i) => `${i ? "L" : "M"}${X(p.x).toFixed(1)},${Y(p.y).toFixed(1)}`).join(" ");
+      const hl = hlines.map((l) => `<line x1="${P.l}" x2="${w - P.r}" y1="${Y(l.y)}" y2="${Y(l.y)}" stroke="${l.color}" stroke-dasharray="4 4" />`).join("");
+      const vl = vlines.map((v) => `<line x1="${X(v.x)}" x2="${X(v.x)}" y1="${P.t}" y2="${h - P.b}" stroke="${v.color}" stroke-dasharray="${v.dash ?? "4 3"}" stroke-width="1.5" />`).join("");
+      const mk = marks.map((m) => m.shape === "tri" ? `<path d="M${X(m.x)},${Y(m.y) - 8} l6,10 h-12z" fill="${m.color}" />` : m.shape === "dia" ? `<path d="M${X(m.x)},${Y(m.y) - 7} l6,7 l-6,7 l-6,-7z" fill="${m.color}" />` : `<circle cx="${X(m.x)}" cy="${Y(m.y)}" r="${m.r ?? 5}" fill="${m.color}" ${m.ring ? `stroke="#fff" stroke-width="2"` : ""} />`).join("");
+      return `<svg viewBox="0 0 ${w} ${h}" role="img">${ticks}${hl}${vl}<path d="${path}" fill="none" stroke="${color}" stroke-width="2" />${mk}<text x="${w - P.r}" y="${h - 4}" text-anchor="end" font-size="10" fill="var(--muted)">${esc(xLabel)}</text></svg>`;
+    }
+
+    // ───────── market ─────────
+    function renderMarket() {
+      const src = live ?? market;
+      if (!src) return;
+      const now = src.now, paid = src.paid;
+      const longPts = market.long.points;
+      const lo = Math.min(...longPts.map((p) => p.baseFeeGwei)), hi = Math.max(...longPts.map((p) => p.baseFeeGwei));
+      const rows = (live ? live.recent.rows : market.recent.rows);
+      const blocksN = rows.length;
+      $("mMeta").innerHTML = `${lang === "pt" ? "bloco" : "block"} ${n(now.block)} · ${esc(when(src.checkedAt ?? market.recordedAt))} · <b>${live ? t().live : t().recorded}</b>`;
+      const tiles = [
+        [t().tiles.base, `${now.baseFeeGwei} gwei`, t().tiles.baseS(now.gasPriceGwei, now.suggestedTipGwei)],
+        [t().tiles.flat, lo === hi ? `${lo} gwei` : `${lo}–${hi}`, t().tiles.flatS(longPts.length)],
+        [t().tiles.over, `${n(paid.overpayingShare * 100, 1)} %`, t().tiles.overS(n(paid.overpaying), n(paid.txs)), true],
+        [t().tiles.extra, `${n(paid.extraPros, 3)}`, t().tiles.extraS(n(paid.blocks)), true],
+      ];
+      $("mTiles").innerHTML = tiles.map(([k, v, s, hot]) => `<div class="tile ${hot ? "hot" : ""}"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div><div class="s">${esc(s)}</div></div>`).join("");
+      $("c30").innerHTML = line(longPts.map((p) => ({ x: p.time, y: p.baseFeeGwei })), { yMin: 0, yMax: 20, h: 110, xLabel: lang === "pt" ? "30 dias →" : "30 days →", marks: longPts.map((p) => ({ x: p.time, y: p.baseFeeGwei, r: 3, color: "var(--fee)" })) });
+      $("c30cap").textContent = t().c30(lo, hi);
+      const maxFull = Math.max(...rows.map((r) => r.u));
+      $("c1024").innerHTML = line(rows.map((r) => ({ x: r.b, y: r.f })), { yMin: 0, yMax: 20, h: 110, xLabel: lang === "pt" ? `${n(blocksN)} blocos →` : `${n(blocksN)} blocks →` });
+      $("c1024cap").textContent = t().c1024(n(blocksN), n(maxFull * 100, 3));
+      const hist = paid.histogram ?? [];
+      const max = Math.max(1, ...hist.map((x) => x.count));
+      $("histTitle").textContent = t().hist(n(paid.txs));
+      $("hist").innerHTML = hist.map((x, i) => `<div class="hrow ${i === 0 ? "floor" : ""}"><span>${esc(t().band[x.label] ?? x.label)}</span><span class="bar"><i style="width:${(x.count / max) * 100}%"></i></span><span class="num">${n(x.count)}</span></div>`).join("");
+      renderQuote();
+    }
+    function renderQuote() {
+      const src = live ?? market;
+      const g = Math.max(21000, Math.min(30_000_000, Number($("gasIn").value) || 21000));
+      const f = (g * src.now.baseFeeGwei) / 1e9, p = (g * (src.paid.effective.p90 ?? src.now.baseFeeGwei)) / 1e9;
+      $("quote").textContent = t().quote(n(f, 6), n(p, 6));
+    }
+    $("gasIn").oninput = renderQuote;
+    $("liveBtn").onclick = async () => {
+      $("liveBtn").disabled = true; $("msg").className = "muted"; $("msg").textContent = t().running;
+      try {
+        const r = await fetch("/api/market");
+        const j = await r.json().catch(() => ({ ok: false, error: t().errNet }));
+        if (!j.ok) throw new Error(j.error);
+        live = j; $("msg").textContent = ""; renderMarket();
+      } catch (e) { $("msg").className = "err"; $("msg").textContent = e.message && e.message !== "Failed to fetch" ? e.message : t().errNet; }
+      finally { $("liveBtn").disabled = false; }
+    };
+
+    // ───────── fork scenarios ─────────
+    function renderTabs() {
+      $("tabs").innerHTML = Object.entries(t().tabs).map(([k, v]) => `<button data-k="${k}" class="${k === scen ? "on" : ""}">${esc(v)}</button>`).join("");
+      $("tabs").querySelectorAll("button").forEach((b) => (b.onclick = () => { scen = b.dataset.k; renderFork(); }));
+    }
+    function renderFork() {
+      if (!fork) return;
+      renderTabs();
+      $("fSub").textContent = t().fSub(n(fork.forkBlock));
+      const s = fork.scenarios.find((x) => x.key === scen);
+      const t0 = s.trace[0].time;
+      const dl = Date.parse(s.request.deadline) / 1000 - t0, lc = dl - 60;
+      const pts = s.trace.filter((x) => x.time != null).map((x) => ({ x: x.time - t0, y: x.baseFeeGwei }));
+      const marks = s.trace.filter((x) => x.time != null && x.action !== "wait").map((x) => ({ x: x.time - t0, y: x.baseFeeGwei, shape: x.action === "submit" ? "tri" : x.action === "replace" ? "dia" : "dot", r: x.action === "done" ? 7 : 3.5, ring: x.action === "done", color: { hold: "var(--warn)", submit: "var(--brand)", replace: "var(--brand)", done: "var(--ok)", superseded: "var(--bad)" }[x.action] ?? "var(--muted)" }));
+      const showDl = scen === "C";
+      $("sc").innerHTML = line(pts, { yMin: 0, yMax: Math.max(20, ...pts.map((p) => p.y)) * 1.25, h: 200, hlines: [{ y: 10, color: "var(--tgt)" }], vlines: showDl ? [{ x: lc, color: "var(--lc)" }, { x: dl, color: "var(--dl)", dash: "0" }] : [], marks, xLabel: lang === "pt" ? "segundos desde o pedido →" : "seconds since the request →" });
+      const L = t().leg;
+      $("legend").innerHTML = [["var(--fee)", L.fee], ["var(--tgt)", L.tgt], ...(showDl ? [["var(--lc)", L.lc], ["var(--dl)", L.dl]] : []), ["var(--warn)", L.hold], ["var(--brand)", L.sent], ["var(--ok)", L.inc]].map(([c, l]) => `<span style="--c:${c}">${esc(l)}</span>`).join("");
+      const r = s.result;
+      $("sv").innerHTML = r ? `<b class="big">${t().paid} ${n(r.paidGwei, 2)} gwei</b>${esc(t().atReq(n(r.atRequest.priceGwei, 2)))} (${r.vsRequestPct >= 0 ? "+" : ""}${n(r.vsRequestPct, 1)} %)<br>${esc(t().before(r.secondsBeforeDeadline))} · ${esc(t().rungs(r.rungsSent, s.rungsIncluded))}` : `<b class="big" style="color:var(--bad)">${esc(t().superseded)}</b>${esc(t().supersededS)} · ${esc(t().rungs(s.submissions.length, s.rungsIncluded))}`;
+      const shown = s.trace.filter((x, i) => x.action !== "hold" || i === 0 || s.trace[i - 1].action !== "hold" || i === s.trace.length - 1 || s.trace[i + 1]?.action !== "hold");
+      $("steps").innerHTML = shown.map((x) => `<li><span class="a ${x.action}">${esc(t().act[x.action] ?? x.action)}</span><span>${x.time != null ? `<span class="num muted">+${x.time - t0}s · ${x.baseFeeGwei} gwei</span><br>` : ""}${esc(x.reason)}</span></li>`).join("");
+    }
+
+    // ───────── simulation + ladder ─────────
+    function renderSim() {
+      if (!sim) return;
+      $("sSub").textContent = t().sSub(lang === "pt" ? "um bloco por segundo, ≤ ±12,5 % por bloco, piso 10 gwei, quatro regimes, teto 400 gwei acima de qualquer pico" : "one block per second, ≤ ±12.5 % per block, a 10 gwei floor, four regimes, a 400 gwei cap above any peak");
+      const S = t().sim;
+      $("sim").innerHTML = [[S.inTime, `${n(sim.includedInTime)}/${n(sim.runs)}`, t().tightest(sim.worstSecondsBeforeDeadline)], [S.twice, n(sim.includedTwice), ""], [S.once, n(sim.sentAtOnce), ""], [S.held, n(sim.heldThenFavorable), ""], [S.last, n(sim.sentAtLastCall), ""]].map(([k, v, s]) => `<div class="tile"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div><div class="s">${esc(s)}</div></div>`).join("");
+      const R = t().reg;
+      $("regimes").innerHTML = `<thead><tr>${R.map((c) => `<th>${esc(c)}</th>`).join("")}</tr></thead><tbody>${Object.entries(sim.byRegime).map(([k, v]) => `<tr><td>${esc(t().regName[k] ?? k)}</td><td class="num">${n(v.runs)}</td><td class="num">${n(v.sentAtOnce)}</td><td class="num">${n(v.heldThenFavorable)}</td><td class="num">${n(v.sentAtLastCall)}</td></tr>`).join("")}</tbody>`;
+    }
+    function renderLadder() {
+      if (!fork) return;
+      const lad = fork.scenarios[0].ladder;
+      const C = t().lcols;
+      $("ladder").innerHTML = `<thead><tr><th>${C[0]}</th><th>${C[1]}</th><th>${C[2]}</th><th class="hide-s">${C[3]}</th></tr></thead><tbody>${lad.map((r, i) => `<tr><td class="num">${r.rung}</td><td class="num">${n(r.maxFeeGwei, 3)}</td><td class="num">${n(r.tipGwei, 1)}</td><td class="hide-s muted">${esc(t().lwhen(i, lad.length))}</td></tr>`).join("")}</tbody>`;
+    }
+
+    function renderStatic() {
+      document.documentElement.lang = lang === "pt" ? "pt-BR" : "en";
+      document.querySelectorAll("[data-i]").forEach((el) => (el.textContent = t()[el.dataset.i]));
+      document.querySelectorAll(".lang button").forEach((b) => b.classList.toggle("on", b.dataset.lang === lang));
+      $("how").innerHTML = t().how.map(([a, b]) => `<div><b>${esc(a)}</b><span>${esc(b)}</span></div>`).join("");
+      $("footer").innerHTML = `${market ? esc(t().footer(when(market.recordedAt))) : ""} · <a href="https://github.com/juhzinho/pharos-gas-optimizer" target="_blank" rel="noopener">GitHub</a> · <a href="https://github.com/juhzinho/pharos-gas-optimizer#readme" target="_blank" rel="noopener">README</a>`;
+    }
+    function renderAll() { renderStatic(); renderMarket(); renderFork(); renderSim(); renderLadder(); }
+    document.querySelectorAll(".lang button").forEach((b) => (b.onclick = () => { lang = b.dataset.lang; try { localStorage.setItem("go-lang", lang); } catch {} renderAll(); }));
+
+    const get = (u) => fetch(u).then((r) => r.json()).catch(() => null);
+    [market, fork, sim] = await Promise.all([get("runs/market.json"), get("runs/fork-proof.json"), get("runs/simulation.json")]);
+    renderAll();
+  </script>
+</body>
+</html>
